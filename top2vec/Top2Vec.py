@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from joblib import dump, load
 from sklearn.cluster import dbscan
 import tempfile
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import normalize
 
 try:
@@ -161,8 +161,9 @@ class Top2Vec:
                  keep_documents=True,
                  workers=None,
                  tokenizer=None,
-                 verbose=True):
-
+                 verbose=True,
+                 count_weighted_words=True):
+        self.count_weighted_words = count_weighted_words
         if verbose:
             logger.setLevel(logging.DEBUG)
             self.verbose = True
@@ -331,12 +332,16 @@ class Top2Vec:
         # deduplicate topics
         self._deduplicate_topics()
 
-        # find topic words and scores
-        self.topic_words, self.topic_word_scores = self._find_topic_words_and_scores(topic_vectors=self.topic_vectors)
-
         # assign documents to topic
         self.doc_top, self.doc_dist = self._calculate_documents_topic(self.topic_vectors,
                                                                       self._get_document_vectors())
+        # word counts per document
+        if self.count_weighted_words:
+            vectorizer = TfidfVectorizer(vocabulary=self.word2index)
+            self.doc_word_counts = vectorizer.fit_transform(train_corpus)
+
+        # find topic words and scores
+        self.topic_words, self.topic_word_scores = self._find_topic_words_and_scores(topic_vectors=self.topic_vectors, doc_top=self.doc_top)
 
         # calculate topic sizes
         self.topic_sizes = self._calculate_topic_sizes(hierarchy=False)
@@ -525,13 +530,22 @@ class Top2Vec:
         else:
             return doc_top
 
-    def _find_topic_words_and_scores(self, topic_vectors):
+    def _find_topic_words_and_scores(self, topic_vectors, doc_top):
+
+        if self.count_weighted_words:
+            topic_word_counts = []
+            for t_i in range(len(topic_vectors)):
+                rel_counts = self.doc_word_counts[doc_top == t_i].sum(axis=0)
+                topic_word_counts.append(rel_counts)
+            topic_word_counts = np.concatenate(topic_word_counts)
         topic_words = []
         topic_word_scores = []
 
         if self.embedding_model == 'doc2vec':
             self.model.wv.init_sims()
             res = np.inner(topic_vectors, self.model.wv.vectors_norm)
+            if self.count_weighted_words:
+                res = np.multiply(res, np.array(topic_word_counts))
             top_words = np.flip(np.argsort(res, axis=1), axis=1)
             top_scores = np.flip(np.sort(res, axis=1), axis=1)
 
@@ -541,13 +555,14 @@ class Top2Vec:
 
         else:
             res = np.inner(topic_vectors, self.word_vectors)
+            if self.count_weighted_words:
+                res = np.multiply(res, np.array(topic_word_counts))
             top_words = np.flip(np.argsort(res, axis=1), axis=1)
             top_scores = np.flip(np.sort(res, axis=1), axis=1)
 
             for words, scores in zip(top_words, top_scores):
                 topic_words.append([self.vocab[i] for i in words[0:50]])
                 topic_word_scores.append(scores[0:50])
-
         topic_words = np.array(topic_words)
         topic_word_scores = np.array(topic_word_scores)
 
@@ -1261,7 +1276,7 @@ class Top2Vec:
                                                                                       self._get_document_vectors())
         # find topic words and scores
         self.topic_words_reduced, self.topic_word_scores_reduced = self._find_topic_words_and_scores(
-            topic_vectors=self.topic_vectors_reduced)
+            topic_vectors=self.topic_vectors_reduced, doc_top=self.doc_top_reduced)
 
         # calculate topic sizes
         self.topic_sizes_reduced = self._calculate_topic_sizes(hierarchy=True)
