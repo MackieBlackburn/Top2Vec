@@ -559,7 +559,7 @@ class Top2Vec:
         else:
             res = np.inner(topic_vectors, self.word_vectors)
             if self.count_weighted_words:
-                res = np.array(topic_word_counts)#np.multiply(res, np.array(topic_word_counts))
+                res = np.multiply(res, np.array(topic_word_counts))
             top_words = np.flip(np.argsort(res, axis=1), axis=1)
             top_scores = np.flip(np.sort(res, axis=1), axis=1)
 
