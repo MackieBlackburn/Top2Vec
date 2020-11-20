@@ -337,7 +337,7 @@ class Top2Vec:
                                                                       self._get_document_vectors())
         # word counts per document
         if self.count_weighted_words:
-            vectorizer = TfidfVectorizer(vocabulary=self.word2index)
+            vectorizer = TfidfVectorizer(vocabulary=self.word2index, sublinear_tf=True)
             self.doc_word_counts = vectorizer.fit_transform(train_corpus)
 
         # find topic words and scores
@@ -530,12 +530,15 @@ class Top2Vec:
         else:
             return doc_top
 
-    def _find_topic_words_and_scores(self, topic_vectors, doc_top):
-
+    def _find_topic_words_and_scores(self, topic_vectors, doc_top, top_n=15):
+        doc_top = np.array(doc_top)
         if self.count_weighted_words:
             topic_word_counts = []
             for t_i in range(len(topic_vectors)):
-                rel_counts = self.doc_word_counts[doc_top == t_i].sum(axis=0)
+                mask = (doc_top == t_i)
+                rel_docs = self.doc_word_counts[mask,:]
+                rel_counts = rel_docs.sum(axis=0).A
+                rel_counts += 0.1
                 topic_word_counts.append(rel_counts)
             topic_word_counts = np.concatenate(topic_word_counts)
         topic_words = []
@@ -550,19 +553,19 @@ class Top2Vec:
             top_scores = np.flip(np.sort(res, axis=1), axis=1)
 
             for words, scores in zip(top_words, top_scores):
-                topic_words.append([self.model.wv.index2word[i] for i in words[0:50]])
-                topic_word_scores.append(scores[0:50])
+                topic_words.append([self.model.wv.index2word[i] for i in words[0:top_n]])
+                topic_word_scores.append(scores[0:top_n])
 
         else:
             res = np.inner(topic_vectors, self.word_vectors)
             if self.count_weighted_words:
-                res = np.multiply(res, np.array(topic_word_counts))
+                res = np.array(topic_word_counts)#np.multiply(res, np.array(topic_word_counts))
             top_words = np.flip(np.argsort(res, axis=1), axis=1)
             top_scores = np.flip(np.sort(res, axis=1), axis=1)
 
             for words, scores in zip(top_words, top_scores):
-                topic_words.append([self.vocab[i] for i in words[0:50]])
-                topic_word_scores.append(scores[0:50])
+                topic_words.append([self.vocab[i] for i in words[0:top_n]])
+                topic_word_scores.append(scores[0:top_n])
         topic_words = np.array(topic_words)
         topic_word_scores = np.array(topic_word_scores)
 
