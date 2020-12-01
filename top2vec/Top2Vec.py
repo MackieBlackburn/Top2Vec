@@ -1216,8 +1216,12 @@ class Top2Vec:
             smallest = sizes.sort_values(ascending=True).index[0]
             res = np.inner(top_vecs[smallest], top_vecs)
             most_sim = np.flip(np.argsort(res))[1]
-            if most_sim == smallest:
-                most_sim = np.flip(np.argsort(res))[1]
+            flipped = np.flip(np.argsort(res))
+            most_sim = smallest
+            cur_ind = 0
+            while most_sim == smallest:
+                most_sim = flipped[cur_ind]
+                cur_ind += 1
 
             # calculate combined topic vector
             top_vec_smallest = top_vecs[smallest]
