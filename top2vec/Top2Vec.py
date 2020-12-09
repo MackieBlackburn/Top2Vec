@@ -1210,18 +1210,12 @@ class Top2Vec:
         interval = max(int(self._get_document_vectors().shape[0] / 50000), 1)
 
         while num_topics_current > num_topics:
-
-            # find smallest and most similar topics
-            sizes = pd.Series(top_sizes).sort_values(ascending=False)
-            smallest = sizes.sort_values(ascending=True).index[0]
+            smallest = np.argmin(top_sizes)
             res = np.inner(top_vecs[smallest], top_vecs)
-            most_sim = np.flip(np.argsort(res))[1]
-            flipped = np.flip(np.argsort(res))
-            most_sim = smallest
-            cur_ind = 0
-            while most_sim == smallest:
-                most_sim = flipped[cur_ind]
-                cur_ind += 1
+            sims = np.flip(np.argsort(res))
+            most_sim = sims[1]
+            if most_sim == smallest:
+                most_sim = sims[0]
 
             # calculate combined topic vector
             top_vec_smallest = top_vecs[smallest]
