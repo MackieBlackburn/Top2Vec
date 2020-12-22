@@ -208,7 +208,8 @@ class Top2Vec:
 
         acceptable_embedding_models = ["universal-sentence-encoder-multilingual",
                                        "universal-sentence-encoder",
-                                       "distiluse-base-multilingual-cased"]
+                                       "distiluse-base-multilingual-cased",
+                                       "bert-base-multilingual-cased"]
 
         self.embedding_model_path = embedding_model_path
 
