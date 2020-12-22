@@ -16,6 +16,7 @@ from sklearn.cluster import dbscan
 import tempfile
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import normalize
+from simpletransformers.language_representation import RepresentationModel
 
 try:
     import tensorflow as tf
@@ -672,8 +673,15 @@ class Top2Vec:
         if self.embed is None:
             if self.verbose is False:
                 logger.setLevel(logging.DEBUG)
-
-            if self.embedding_model != "distiluse-base-multilingual-cased":
+            if self.embedding_model == 'bert-based-multilingual-cased':
+                model = RepresentationModel(
+                    model_type="bert",
+                    model_name="bert-base-multilingual-cased",
+                    use_cuda=False,
+                    args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
+                )
+                self.embed = lambda sents: model.encode_sentences(sents, combine_strategy="mean")
+            elif self.embedding_model != "distiluse-base-multilingual-cased":
                 if self.embedding_model_path is None:
                     logger.info(f'Downloading {self.embedding_model} model')
                     if self.embedding_model == "universal-sentence-encoder-multilingual":
