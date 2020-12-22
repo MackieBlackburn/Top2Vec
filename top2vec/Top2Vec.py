@@ -674,7 +674,7 @@ class Top2Vec:
         if self.embed is None:
             if self.verbose is False:
                 logger.setLevel(logging.DEBUG)
-            if self.embedding_model == 'bert-based-multilingual-cased':
+            if self.embedding_model == 'bert-base-multilingual-cased':
                 model = RepresentationModel(
                     model_type="bert",
                     model_name="bert-base-multilingual-cased",
