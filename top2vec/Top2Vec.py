@@ -163,7 +163,8 @@ class Top2Vec:
                  workers=None,
                  tokenizer=None,
                  verbose=True,
-                 count_weighted_words=True):
+                 count_weighted_words=True,
+                 extra_vectors=None):
         self.count_weighted_words = count_weighted_words
         if verbose:
             logger.setLevel(logging.DEBUG)
@@ -309,6 +310,8 @@ class Top2Vec:
 
             # embed documents
             self.document_vectors = self._embed_documents(train_corpus)
+            if extra_vectors is not None:
+                self.document_vectors = np.hstack([self.document_vectors, extra_vectors])
 
         else:
             raise ValueError(f"{embedding_model} is an invalid embedding model.")
