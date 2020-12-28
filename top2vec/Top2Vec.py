@@ -310,8 +310,8 @@ class Top2Vec:
 
             # embed documents
             self.document_vectors = self._embed_documents(train_corpus)
-            if extra_vectors is not None:
-                self.document_vectors = np.hstack([self.document_vectors, extra_vectors])
+            self.extra_vectors = extra_vectors
+
 
         else:
             raise ValueError(f"{embedding_model} is an invalid embedding model.")
@@ -428,16 +428,18 @@ class Top2Vec:
             self.document_vectors = document_vectors
 
     def _get_document_vectors(self, norm=True):
-
         if self.embedding_model == 'doc2vec':
 
             if norm:
                 self.model.docvecs.init_sims()
-                return self.model.docvecs.vectors_docs_norm
+                return_vecs =  self.model.docvecs.vectors_docs_norm
             else:
-                return self.model.docvecs.vectors_docs
+                return_vecs =  self.model.docvecs.vectors_docs
         else:
-            return self.document_vectors
+            return_vecs =  self.document_vectors
+        if self.extra_vectors is not None:
+            return_vecs = np.hstack([return_vecs, self.extra_vectors])
+        return return_vecs
 
     def _create_topic_vectors(self, cluster_labels):
 
@@ -536,6 +538,8 @@ class Top2Vec:
             return doc_top
 
     def _find_topic_words_and_scores(self, topic_vectors, doc_top, top_n=15):
+        if self.extra_vectors is not None:
+            topic_vectors = topic_vectors[:,:512]
         doc_top = np.array(doc_top)
         if self.count_weighted_words:
             topic_word_counts = []
