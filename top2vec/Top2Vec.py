@@ -955,8 +955,8 @@ class Top2Vec:
         self._validate_documents(documents)
         if self.documents is not None:
             self.documents = np.append(self.documents, documents)
-        if self.extra_vectors is not None:
-            self.extra_vectors = np.vstack([self.extra_vectors, extra_vectors])
+        #if self.extra_vectors is not None:
+        #    self.extra_vectors = np.vstack([self.extra_vectors, extra_vectors])
 
 
         # add document ids
@@ -984,6 +984,7 @@ class Top2Vec:
         else:
             docs_training = [' '.join(doc) for doc in docs_processed]
             document_vectors = self._embed_documents(docs_training)
+            document_vectors = np.hstack([document_vectors, extra_vectors])
             self._set_document_vectors(np.vstack([self._get_document_vectors(), document_vectors]))
 
         # update topics
