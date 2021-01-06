@@ -927,7 +927,7 @@ class Top2Vec:
 
         return doc_topics, doc_dist, topic_words, topic_word_scores
 
-    def add_documents(self, documents, doc_ids=None):
+    def add_documents(self, documents, doc_ids=None, extra_vectors=None):
         """
         Update the model with new documents.
 
@@ -955,6 +955,9 @@ class Top2Vec:
         self._validate_documents(documents)
         if self.documents is not None:
             self.documents = np.append(self.documents, documents)
+        if self.extra_vectors is not None:
+            self.extra_vectors = np.append(self.extra_vectors, extra_vectors)
+
 
         # add document ids
         if self.document_ids is not None:
