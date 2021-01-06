@@ -956,7 +956,7 @@ class Top2Vec:
         if self.documents is not None:
             self.documents = np.append(self.documents, documents)
         if self.extra_vectors is not None:
-            self.extra_vectors = np.append(self.extra_vectors, extra_vectors)
+            self.extra_vectors = np.vstack([self.extra_vectors, extra_vectors])
 
 
         # add document ids
