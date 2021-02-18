@@ -210,7 +210,8 @@ class Top2Vec:
         acceptable_embedding_models = ["universal-sentence-encoder-multilingual",
                                        "universal-sentence-encoder",
                                        "distiluse-base-multilingual-cased",
-                                       "bert-base-multilingual-cased"]
+                                       "bert-base-multilingual-cased",
+                                       "distilbert-base-multilingual-cased"]
 
         self.embedding_model_path = embedding_model_path
 
@@ -686,7 +687,15 @@ class Top2Vec:
                     model_type="bert",
                     model_name="bert-base-multilingual-cased",
                     use_cuda=False,
-                    args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
+                    #args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
+                )
+                self.embed = lambda sents: model.encode_sentences(sents, combine_strategy="mean")
+            elif self.embedding_model == 'distilbert-base-multilingual-cased':
+                model = RepresentationModel(
+                    model_type="distilbert",
+                    model_name="distilbert-base-multilingual-cased",
+                    use_cuda=False,
+                    #args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
                 )
                 self.embed = lambda sents: model.encode_sentences(sents, combine_strategy="mean")
             elif self.embedding_model != "distiluse-base-multilingual-cased":
