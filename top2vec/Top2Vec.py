@@ -692,7 +692,7 @@ class Top2Vec:
                 self.embed = lambda sents: model.encode_sentences(sents, combine_strategy="mean")
             elif self.embedding_model == 'distilbert-base-multilingual-cased':
                 model = RepresentationModel(
-                    model_type="bert",
+                    model_type="distilbert",
                     model_name="distilbert-base-multilingual-cased",
                     use_cuda=False,
                     #args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
