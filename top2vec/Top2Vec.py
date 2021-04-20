@@ -692,7 +692,7 @@ class Top2Vec:
                 self.embed = lambda sents: model.encode_sentences(sents, combine_strategy="mean")
             elif self.embedding_model == 'distilbert-base-multilingual-cased':
                 model = RepresentationModel(
-                    model_type="distilbert",
+                    model_type="bert",
                     model_name="distilbert-base-multilingual-cased",
                     use_cuda=False,
                     #args={"no_save": True, "reprocess_input_data": True, "overwrite_output_dir": True},
@@ -993,7 +993,7 @@ class Top2Vec:
         else:
             docs_training = [' '.join(doc) for doc in docs_processed]
             document_vectors = self._embed_documents(docs_training)
-            document_vectors = np.hstack([document_vectors, extra_vectors])
+            #document_vectors = np.hstack([document_vectors, extra_vectors])
             self._set_document_vectors(np.vstack([self._get_document_vectors(), document_vectors]))
 
         # update topics
